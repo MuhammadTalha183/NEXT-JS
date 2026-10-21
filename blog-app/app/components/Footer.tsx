@@ -1,6 +1,5 @@
 "use client"
-import React from 'react';
-
+import React, { useState, useEffect } from 'react';
 interface FooterLink {
   name: string;
   href: string;
@@ -12,14 +11,21 @@ interface FooterColumn {
 }
 
 const Footer: React.FC = () => {
+
+  const [year, setYear] = useState<number>(2026);
+
+  useEffect(() => {
+    // Recompute on client mount safely after prerendering
+    setYear(new Date().getFullYear());
+  }, []);
   const footerSections: FooterColumn[] = [
     {
       title: 'Navigation',
       links: [
-        { name: 'Home', href: '#' },
-        { name: 'About Us', href: '#about' },
-        { name: 'Blogs', href: '#blogs' },
-        { name: 'Dashboard', href: '#dashboard' },
+        { name: 'Home', href: '/' },
+        { name: 'About Us', href: '/about' },
+        { name: 'Blogs', href: '/blogs' },
+        { name: 'Dashboard', href: '/dashboard' },
       ],
     },
     {
@@ -112,8 +118,7 @@ const Footer: React.FC = () => {
 
         {/* Bottom Bar Section */}
         <div className="pt-8 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-gray-500">
-          <p>© {new Date().getFullYear()} DevBlog. All rights reserved.</p>
-
+<p>© {year} DevBlog. All rights reserved.</p>
           {/* Social Links / Icons */}
           <div className="flex items-center space-x-5">
             <a href="#" className="hover:text-indigo-600 transition-colors" aria-label="Twitter">
