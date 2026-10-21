@@ -1,10 +1,11 @@
+"use client"
 import React from 'react'
-import About from '../components/About'
+import BlogSection from '../../components/BlogSection'
 
 export default function page() {
   return (
     <div>
-      <About/>
+      <BlogSection/>
     </div>
   )
 }

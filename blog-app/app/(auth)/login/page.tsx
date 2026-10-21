@@ -1,27 +1,23 @@
 'use client';
-
 import React, { useState, FormEvent } from 'react';
-import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
-import { auth, db } from '../config/firebase';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '../../config/firebase';
 import { ToastContainer, toast } from 'react-toastify';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import 'react-toastify/dist/ReactToastify.css';
 
-export default function SignupPage() {
+export default function LoginPage() {
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
-  const [username, setUsername] = useState<string>('');
-  const [age, setAge] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
 
   const router = useRouter();
 
-  const handleSignup = async (e: FormEvent<HTMLFormElement>) => {
+  const handleSignIn = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (!email || !password || !username || !age) {
+    if (!email || !password) {
       toast.error('Please fill in all fields.');
       return;
     }
@@ -29,33 +25,15 @@ export default function SignupPage() {
     setLoading(true);
 
     try {
-      // 1. Authenticate & create user in Firebase Auth
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
+      await signInWithEmailAndPassword(auth, email, password);
+      toast.success('User Logged in Successfully!');
 
-      if (user) {
-        // 2. Set display name in Auth profile
-        await updateProfile(user, { displayName: username });
-
-        // 3. Store user details in Firestore using UID as Document Key
-        await setDoc(doc(db, 'users', user.uid), {
-          uid: user.uid,
-          username,
-          email,
-          age: Number(age) || age,
-          createdAt: serverTimestamp(),
-        });
-
-        toast.success('User Created Successfully!');
-
-        // Redirect after delay
-        setTimeout(() => {
-          router.push('/login');
-        }, 1500);
-      }
+      setTimeout(() => {
+        router.push('/dashboard');
+        
+      }, 1500);
     } catch (error: any) {
-      console.error('Signup Error:', error);
-      toast.error(error.message || 'Failed to create account.');
+      toast.error(error.message || 'Failed to sign in.');
     } finally {
       setLoading(false);
     }
@@ -72,26 +50,11 @@ export default function SignupPage() {
             <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 text-2xl text-white shadow-lg shadow-indigo-500/30">
               ✦
             </div>
-            <h1 className="text-3xl font-bold text-white">Create Account</h1>
-            <p className="mt-2 text-sm text-slate-400">Create your account to get started</p>
+            <h1 className="text-3xl font-bold text-white">Welcome Back</h1>
+            <p className="mt-2 text-sm text-slate-400">Sign in to your account to continue</p>
           </div>
 
-          <form onSubmit={handleSignup} className="space-y-5">
-            <div>
-              <label className="mb-2 block text-sm font-medium text-slate-300">User Name</label>
-              <div className="flex items-center rounded-xl border border-slate-700 bg-slate-800 px-4 transition focus-within:border-indigo-500 focus-within:ring-4 focus-within:ring-indigo-500/10">
-                <span className="mr-3 text-slate-400">👤</span>
-                <input
-                  type="text"
-                  required
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Enter your User Name"
-                  className="h-12 w-full bg-transparent text-white outline-none placeholder:text-slate-500 text-sm"
-                />
-              </div>
-            </div>
-
+          <form onSubmit={handleSignIn} className="space-y-5">
             <div>
               <label className="mb-2 block text-sm font-medium text-slate-300">Email Address</label>
               <div className="flex items-center rounded-xl border border-slate-700 bg-slate-800 px-4 transition focus-within:border-indigo-500 focus-within:ring-4 focus-within:ring-indigo-500/10">
@@ -102,21 +65,6 @@ export default function SignupPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Enter your email"
-                  className="h-12 w-full bg-transparent text-white outline-none placeholder:text-slate-500 text-sm"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="mb-2 block text-sm font-medium text-slate-300">Age</label>
-              <div className="flex items-center rounded-xl border border-slate-700 bg-slate-800 px-4 transition focus-within:border-indigo-500 focus-within:ring-4 focus-within:ring-indigo-500/10">
-                <span className="mr-3 text-slate-400">🎂</span>
-                <input
-                  type="number"
-                  required
-                  value={age}
-                  onChange={(e) => setAge(e.target.value)}
-                  placeholder="Enter your age"
                   className="h-12 w-full bg-transparent text-white outline-none placeholder:text-slate-500 text-sm"
                 />
               </div>
@@ -142,16 +90,16 @@ export default function SignupPage() {
               disabled={loading}
               className="group flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 font-semibold text-white shadow-lg shadow-indigo-500/20 transition duration-200 hover:-translate-y-0.5 hover:shadow-indigo-500/40 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
             >
-              {loading ? 'Creating Account...' : 'Create Account'}
+              {loading ? 'Signing in...' : 'Sign In'}
               {!loading && <span className="text-xl transition-transform group-hover:translate-x-1">→</span>}
             </button>
           </form>
 
           <div className="mt-7 text-center">
             <p className="text-sm text-slate-400">
-              Already have an account?
-              <Link href="/login" className="ml-1 font-semibold text-indigo-400 transition hover:text-indigo-300">
-                Login
+              Don&apos;t have an account?
+              <Link href="/signup" className="ml-1 font-semibold text-indigo-400 transition hover:text-indigo-300">
+                Sign Up
               </Link>
             </p>
           </div>
